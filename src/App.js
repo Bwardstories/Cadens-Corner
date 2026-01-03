@@ -5,6 +5,7 @@ import { AudioProvider } from './context/AudioContext';
 import Navigation from './components/layout/Navigation';
 import Home from './components/modes/Home';
 import WordStructure from './components/reading/WordStructure';
+import MinimalPairs from './components/modes/MinimalPairs';
 import SettingsPanel from './components/settings/SettingsPanel';
 import { ROUTES } from './constants/routes';
 
@@ -19,13 +20,10 @@ function App() {
             <Routes>
               <Route path={ROUTES.HOME} element={<Home />} />
               <Route path={ROUTES.WORD_STRUCTURE} element={<WordStructure />} />
+              <Route path={ROUTES.MINIMAL_PAIRS} element={<MinimalPairs />} />
               <Route path={ROUTES.SETTINGS} element={<SettingsPanel />} />
 
               {/* Placeholders for future modes */}
-              <Route
-                path={ROUTES.MINIMAL_PAIRS}
-                element={<ComingSoon mode="Minimal Pairs" />}
-              />
               <Route
                 path={ROUTES.SOUND_SLIDER}
                 element={<ComingSoon mode="Sound Blending" />}

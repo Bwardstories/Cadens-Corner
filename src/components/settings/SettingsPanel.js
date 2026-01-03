@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { ROUTES } from '../../constants/routes';
 
 /**
  * Settings Panel
@@ -25,11 +24,11 @@ const SettingsPanel = () => {
       {/* Header with Back Button */}
       <div className="flex items-center gap-4 mb-8">
         <button
-          onClick={() => navigate(ROUTES.HOME)}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>Back to Home</span>
+          <span>Back</span>
         </button>
         <h1 className="text-3xl font-semibold text-gray-800">Settings</h1>
       </div>
@@ -108,7 +107,7 @@ const SettingsPanel = () => {
       {/* Bottom Action Bar */}
       <div className="mt-6 flex justify-between items-center">
         <button
-          onClick={() => navigate(ROUTES.HOME)}
+          onClick={() => navigate(-1)}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
         >
           Done
