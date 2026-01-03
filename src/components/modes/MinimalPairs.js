@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Volume2, Settings2, RotateCcw } from 'lucide-react';
 import { useAudio } from '../../context/AudioContext';
 import { useAppContext } from '../../context/AppContext';
+import { useProgressTracking } from '../../hooks/useProgressTracking';
 import Header from '../layout/Header';
 import FeedbackMessage from '../common/FeedbackMessage';
 import SpeakableText from '../common/SpeakableText';
@@ -14,10 +15,12 @@ import { generateFeedback } from '../../utils/feedbackGenerator';
  *
  * Helps distinguish similar sounds (thirteen vs fourteen, bat vs dat, etc.)
  * Three modes: exaggerated, normal, background noise
+ * NOW WITH Feature #8: Tracks performance and adapts difficulty
  */
 const MinimalPairs = () => {
   const { speak } = useAudio();
   const { settings } = useAppContext();
+  const { trackAttempt } = useProgressTracking();
 
   // Game state
   const [currentPair, setCurrentPair] = useState(null);
@@ -111,6 +114,21 @@ const MinimalPairs = () => {
     setAttempts(attempts + 1);
 
     const isCorrect = word === playedWord;
+
+    // Track attempt (Feature #8: Progress Tracking)
+    trackAttempt('pair', currentPair.pair, isCorrect, {
+      difficultySound: currentPair.difficultySound,
+      speechMode,
+      playedWord
+    });
+
+    // Also track the specific sound being practiced
+    if (currentPair.difficultySound) {
+      trackAttempt('sound', currentPair.difficultySound, isCorrect, {
+        pair: currentPair.pair,
+        speechMode
+      });
+    }
 
     // Generate feedback
     const feedbackData = generateFeedback(isCorrect, {

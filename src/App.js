@@ -1,21 +1,25 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useAppContext } from './context/AppContext';
 import { AudioProvider } from './context/AudioContext';
+import { ProgressProvider } from './context/ProgressContext';
 import Navigation from './components/layout/Navigation';
 import Home from './components/modes/Home';
 import WordStructure from './components/reading/WordStructure';
 import MinimalPairs from './components/modes/MinimalPairs';
+import SyllableBeat from './components/modes/SyllableBeat';
+import ReverseBlending from './components/modes/ReverseBlending';
 import SettingsPanel from './components/settings/SettingsPanel';
 import { ROUTES } from './constants/routes';
 
-function App() {
+// Inner component that has access to AppContext
+function ThemedApp() {
+  const { settings } = useAppContext();
+  const isDark = settings.theme === 'dark';
+
   return (
-    <AppProvider>
-      <AudioProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-            <Navigation />
+    <div className={`min-h-screen ${isDark ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-purple-50'}`}>
+      <Navigation />
 
             <Routes>
               <Route path={ROUTES.HOME} element={<Home />} />
@@ -30,11 +34,11 @@ function App() {
               />
               <Route
                 path={ROUTES.SYLLABLE_BEAT}
-                element={<ComingSoon mode="Syllable Beat" />}
+                element={<SyllableBeat />}
               />
               <Route
                 path={ROUTES.REVERSE_BLENDING}
-                element={<ComingSoon mode="Sound Detective" />}
+                element={<ReverseBlending />}
               />
               <Route
                 path={ROUTES.SOUND_ISOLATION}
@@ -48,9 +52,20 @@ function App() {
                 path={ROUTES.VOICE_COMPARISON}
                 element={<ComingSoon mode="Voice Match" />}
               />
-            </Routes>
-          </div>
-        </BrowserRouter>
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AudioProvider>
+        <ProgressProvider>
+          <BrowserRouter>
+            <ThemedApp />
+          </BrowserRouter>
+        </ProgressProvider>
       </AudioProvider>
     </AppProvider>
   );

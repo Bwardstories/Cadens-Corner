@@ -12,7 +12,7 @@ export const AppProvider = ({ children }) => {
   const [settings, setSettings] = useLocalStorage('cadens-corner-settings', {
     speechRate: 0.7,
     noiseLevel: 'none', // 'none', 'light', 'moderate'
-    theme: 'calm-neutral', // Feature #9: Age-respectful theme
+    theme: 'light', // 'light' or 'dark' - Feature #9: Age-respectful theme
     voiceGender: 'neutral'
   });
 

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useAudio } from '../../context/AudioContext';
+import { useProgressTracking } from '../../hooks/useProgressTracking';
 import Header from '../layout/Header';
 import AudioButton from '../common/AudioButton';
 import SoundTile from '../common/SoundTile';
+import { words } from '../../data/words';
 
 const WordStructure = () => {
   const [currentWord, setCurrentWord] = useState(0);
@@ -12,60 +14,7 @@ const WordStructure = () => {
   const [completedWords, setCompletedWords] = useState([]);
 
   const { speak, speakSound } = useAudio();
-
-  // Word library with phonetic breakdown and color coding
-  const words = [
-    {
-      word: 'cat',
-      sounds: [
-        { letter: 'c', phoneme: 'k', color: 'bg-red-200' },
-        { letter: 'a', phoneme: 'æ', color: 'bg-blue-200' },
-        { letter: 't', phoneme: 't', color: 'bg-green-200' }
-      ],
-      image: '🐱',
-      audio: 'cat'
-    },
-    {
-      word: 'dog',
-      sounds: [
-        { letter: 'd', phoneme: 'd', color: 'bg-purple-200' },
-        { letter: 'o', phoneme: 'ɑ', color: 'bg-yellow-200' },
-        { letter: 'g', phoneme: 'g', color: 'bg-pink-200' }
-      ],
-      image: '🐕',
-      audio: 'dog'
-    },
-    {
-      word: 'bat',
-      sounds: [
-        { letter: 'b', phoneme: 'b', color: 'bg-orange-200' },
-        { letter: 'a', phoneme: 'æ', color: 'bg-blue-200' },
-        { letter: 't', phoneme: 't', color: 'bg-green-200' }
-      ],
-      image: '🦇',
-      audio: 'bat'
-    },
-    {
-      word: 'sun',
-      sounds: [
-        { letter: 's', phoneme: 's', color: 'bg-yellow-300' },
-        { letter: 'u', phoneme: 'ʌ', color: 'bg-red-300' },
-        { letter: 'n', phoneme: 'n', color: 'bg-blue-300' }
-      ],
-      image: '☀️',
-      audio: 'sun'
-    },
-    {
-      word: 'pig',
-      sounds: [
-        { letter: 'p', phoneme: 'p', color: 'bg-pink-300' },
-        { letter: 'i', phoneme: 'ɪ', color: 'bg-purple-300' },
-        { letter: 'g', phoneme: 'g', color: 'bg-green-300' }
-      ],
-      image: '🐷',
-      audio: 'pig'
-    }
-  ];
+  const { trackAttempt } = useProgressTracking();
 
   const currentWordData = words[currentWord];
 
@@ -74,6 +23,21 @@ const WordStructure = () => {
   };
 
   const handleNextWord = () => {
+    // Track word practice (Feature #8: Progress Tracking)
+    // In exploration mode, we track all as "correct" since they're learning
+    trackAttempt('word', currentWordData.word, true, {
+      mode: 'word_structure',
+      sounds: currentWordData.sounds.map(s => s.phoneme).join(',')
+    });
+
+    // Track each sound practiced
+    currentWordData.sounds.forEach(sound => {
+      trackAttempt('sound', sound.phoneme, true, {
+        mode: 'word_structure',
+        word: currentWordData.word
+      });
+    });
+
     setCompletedWords([...completedWords, currentWordData.word]);
     setScore(score + 10);
     setStreak(streak + 1);

@@ -46,21 +46,21 @@ const FeedbackMessage = ({
 
           {/* Suggestion (for incorrect answers after multiple attempts) */}
           {feedback.suggestion && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               {feedback.suggestion}
             </p>
           )}
 
           {/* Tip (for specific sound pairs) - with audio */}
           {feedback.tip && (
-            <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
-              <div className="flex items-center gap-2 text-purple-700 mb-1">
+            <div className="mt-3 p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400 mb-1">
                 <Lightbulb size={16} />
                 <span className="text-sm font-medium">Tip:</span>
               </div>
               <SpeakableText
                 text={feedback.tip}
-                className="text-sm text-gray-700"
+                className="text-sm text-gray-700 dark:text-gray-300"
                 iconSize={14}
               />
             </div>

@@ -25,26 +25,26 @@ const SettingsPanel = () => {
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
           <ArrowLeft size={20} />
           <span>Back</span>
         </button>
-        <h1 className="text-3xl font-semibold text-gray-800">Settings</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Settings</h1>
       </div>
 
       {/* Saved Indicator */}
       {showSaved && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700 animate-fade-in">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-green-700 dark:text-green-400 animate-fade-in">
           <Check size={20} />
           <span>Settings saved</span>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-md p-6 space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6">
         {/* Speech Rate */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Speech Rate
           </label>
           <input
@@ -56,7 +56,7 @@ const SettingsPanel = () => {
             onChange={(e) => updateSetting('speechRate', parseFloat(e.target.value))}
             className="w-full"
           />
-          <div className="flex justify-between text-sm text-gray-600 mt-1">
+          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
             <span>Slower</span>
             <span>{settings.speechRate.toFixed(1)}x</span>
             <span>Faster</span>
@@ -65,13 +65,13 @@ const SettingsPanel = () => {
 
         {/* Noise Level */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Background Noise Level (for Minimal Pairs)
           </label>
           <select
             value={settings.noiseLevel}
             onChange={(e) => updateSetting('noiseLevel', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="none">None</option>
             <option value="light">Light</option>
@@ -81,24 +81,25 @@ const SettingsPanel = () => {
 
         {/* Theme */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Theme
           </label>
           <select
             value={settings.theme}
             onChange={(e) => updateSetting('theme', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="calm-neutral">Calm & Neutral</option>
+            <option value="light">Light Mode</option>
+            <option value="dark">Dark Mode</option>
           </select>
         </div>
 
         {/* Info */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-gray-700">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             Settings are automatically saved to your browser and will persist across sessions.
           </p>
-          <p className="text-xs text-gray-600 mt-2">
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
             Future: Settings will sync to the cloud via Firebase.
           </p>
         </div>
@@ -108,7 +109,7 @@ const SettingsPanel = () => {
       <div className="mt-6 flex justify-between items-center">
         <button
           onClick={() => navigate(-1)}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+          className="px-6 py-3 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors"
         >
           Done
         </button>
