@@ -1,20 +1,26 @@
-import React, { createContext, useContext, useState } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { getUserSettings, saveUserSettings, migrateLocalStorageToFirestore } from '../firebase/firestoreService';
 
 const AppContext = createContext();
+
+const DEFAULT_SETTINGS = {
+  speechRate: 0.7,
+  noiseLevel: 'none',
+  theme: 'light',
+  voiceGender: 'neutral'
+};
 
 /**
  * AppContext Provider
  * Manages global application state including settings, theme, and session info
+ * NOW USES FIRESTORE instead of localStorage for cloud sync
  */
 export const AppProvider = ({ children }) => {
-  // Persistent settings stored in localStorage
-  const [settings, setSettings] = useLocalStorage('cadens-corner-settings', {
-    speechRate: 0.7,
-    noiseLevel: 'none', // 'none', 'light', 'moderate'
-    theme: 'light', // 'light' or 'dark' - Feature #9: Age-respectful theme
-    voiceGender: 'neutral'
-  });
+  const { user } = useAuth();
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(true);
+  const [migrated, setMigrated] = useState(false);
 
   // Session state (not persisted)
   const [session, setSession] = useState({
@@ -23,16 +29,59 @@ export const AppProvider = ({ children }) => {
     totalInteractions: 0
   });
 
+  // Load settings from Firestore when user logs in
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!user) {
+        setSettings(DEFAULT_SETTINGS);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Migrate localStorage data on first login (one-time)
+        if (!migrated && localStorage.getItem('cadens-corner-settings')) {
+          await migrateLocalStorageToFirestore(user.uid);
+          setMigrated(true);
+        }
+
+        // Load settings from Firestore
+        const firestoreSettings = await getUserSettings(user.uid);
+        setSettings(firestoreSettings);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        setSettings(DEFAULT_SETTINGS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [user, migrated]);
+
   /**
    * Update a specific setting
+   * Saves to Firestore in real-time
    * @param {string} key - The setting key
    * @param {*} value - The new value
    */
-  const updateSetting = (key, value) => {
-    setSettings(prev => ({
-      ...prev,
+  const updateSetting = async (key, value) => {
+    const newSettings = {
+      ...settings,
       [key]: value
-    }));
+    };
+
+    // Update local state immediately for responsive UI
+    setSettings(newSettings);
+
+    // Save to Firestore if user is authenticated
+    if (user) {
+      try {
+        await saveUserSettings(user.uid, newSettings);
+      } catch (error) {
+        console.error('Error saving settings:', error);
+      }
+    }
   };
 
   /**
@@ -62,6 +111,7 @@ export const AppProvider = ({ children }) => {
     settings,
     setSettings,
     updateSetting,
+    loading,
     session,
     setSession,
     recordModeVisit,

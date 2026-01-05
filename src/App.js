@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { AudioProvider } from './context/AudioContext';
 import { ProgressProvider } from './context/ProgressContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navigation from './components/layout/Navigation';
+import Login from './components/auth/Login';
 import Home from './components/modes/Home';
 import WordStructure from './components/reading/WordStructure';
 import MinimalPairs from './components/modes/MinimalPairs';
@@ -12,7 +14,34 @@ import ReverseBlending from './components/modes/ReverseBlending';
 import SettingsPanel from './components/settings/SettingsPanel';
 import { ROUTES } from './constants/routes';
 
-// Inner component that has access to AppContext
+// Component that checks authentication and shows appropriate UI
+function AuthenticatedApp() {
+  const { user, loading } = useAuth();
+  const { settings } = useAppContext();
+  const isDark = settings.theme === 'dark';
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-purple-50'}`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!user) {
+    return <Login />;
+  }
+
+  // Show main app if authenticated
+  return <ThemedApp />;
+}
+
+// Main app with theme support
 function ThemedApp() {
   const { settings } = useAppContext();
   const isDark = settings.theme === 'dark';
@@ -59,15 +88,17 @@ function ThemedApp() {
 
 function App() {
   return (
-    <AppProvider>
-      <AudioProvider>
-        <ProgressProvider>
-          <BrowserRouter>
-            <ThemedApp />
-          </BrowserRouter>
-        </ProgressProvider>
-      </AudioProvider>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AudioProvider>
+          <ProgressProvider>
+            <BrowserRouter>
+              <AuthenticatedApp />
+            </BrowserRouter>
+          </ProgressProvider>
+        </AudioProvider>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 

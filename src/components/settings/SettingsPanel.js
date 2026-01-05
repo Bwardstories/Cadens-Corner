@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, LogOut, User } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Settings Panel
@@ -10,7 +11,17 @@ import { useAppContext } from '../../context/AppContext';
 const SettingsPanel = () => {
   const navigate = useNavigate();
   const { settings, updateSetting } = useAppContext();
+  const { user, signOut } = useAuth();
   const [showSaved, setShowSaved] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // Show "saved" message whenever settings change
   useEffect(() => {
@@ -94,13 +105,43 @@ const SettingsPanel = () => {
           </select>
         </div>
 
+        {/* Account Info */}
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Account</h3>
+
+          {user && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-4">
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                  <User size={20} className="text-white" />
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="font-medium text-gray-800 dark:text-gray-100">{user.displayName || 'User'}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg font-medium transition-colors"
+          >
+            <LogOut size={20} />
+            Sign Out
+          </button>
+        </div>
+
         {/* Info */}
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            Settings are automatically saved to your browser and will persist across sessions.
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-            Future: Settings will sync to the cloud via Firebase.
+            Your settings and progress are automatically saved to the cloud and sync across all your devices.
           </p>
         </div>
       </div>

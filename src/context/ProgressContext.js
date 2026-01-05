@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useCallback } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from './AuthContext';
+import { getUserProgress, saveUserProgress, migrateLocalStorageToFirestore } from '../firebase/firestoreService';
 
 /**
  * ProgressContext
@@ -10,9 +11,21 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
  * - Accuracy for each sound
  * - Problem areas (sounds they struggle with)
  * - Adaptive difficulty recommendations
+ *
+ * NOW USES FIRESTORE instead of localStorage for cloud sync
  */
 
 const ProgressContext = createContext();
+
+const DEFAULT_PROGRESS = {
+  soundAccuracy: {}, // { '/θ/': { correct: 5, total: 10, lastAttempt: timestamp }, ... }
+  pairAccuracy: {}, // { 'thirteen-fourteen': { correct: 3, total: 8, lastAttempt: timestamp }, ... }
+  wordAccuracy: {}, // { 'thirteen': { correct: 7, total: 12, lastAttempt: timestamp }, ... }
+  sessionHistory: [], // Array of session objects with timestamp, mode, score
+  totalAttempts: 0,
+  totalCorrect: 0,
+  startDate: Date.now()
+};
 
 export const useProgress = () => {
   const context = useContext(ProgressContext);
@@ -23,16 +36,60 @@ export const useProgress = () => {
 };
 
 export const ProgressProvider = ({ children }) => {
-  // Persistent storage for progress data
-  const [progressData, setProgressData] = useLocalStorage('cadens-corner-progress', {
-    soundAccuracy: {}, // { '/θ/': { correct: 5, total: 10, lastAttempt: timestamp }, ... }
-    pairAccuracy: {}, // { 'thirteen-fourteen': { correct: 3, total: 8, lastAttempt: timestamp }, ... }
-    wordAccuracy: {}, // { 'thirteen': { correct: 7, total: 12, lastAttempt: timestamp }, ... }
-    sessionHistory: [], // Array of session objects with timestamp, mode, score
-    totalAttempts: 0,
-    totalCorrect: 0,
-    startDate: Date.now()
-  });
+  const { user } = useAuth();
+  const [progressData, setProgressData] = useState(DEFAULT_PROGRESS);
+  const [loading, setLoading] = useState(true);
+  const [migrated, setMigrated] = useState(false);
+  const isSaving = useRef(false);
+
+  // Load progress from Firestore when user logs in
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (!user) {
+        setProgressData(DEFAULT_PROGRESS);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Migrate localStorage data on first login (one-time)
+        if (!migrated && localStorage.getItem('cadens-corner-progress')) {
+          await migrateLocalStorageToFirestore(user.uid);
+          setMigrated(true);
+        }
+
+        // Load progress from Firestore
+        const firestoreProgress = await getUserProgress(user.uid);
+        setProgressData(firestoreProgress);
+      } catch (error) {
+        console.error('Error loading progress:', error);
+        setProgressData(DEFAULT_PROGRESS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProgress();
+  }, [user, migrated]);
+
+  // Auto-save to Firestore whenever progressData changes
+  useEffect(() => {
+    const saveProgress = async () => {
+      // Don't save if no user, still loading, or already saving
+      if (!user || loading || isSaving.current) return;
+
+      try {
+        isSaving.current = true;
+        await saveUserProgress(user.uid, progressData);
+      } catch (error) {
+        console.error('Error saving progress:', error);
+      } finally {
+        isSaving.current = false;
+      }
+    };
+
+    saveProgress();
+  }, [progressData, user, loading]);
 
   /**
    * Record an attempt for a sound
@@ -259,6 +316,7 @@ export const ProgressProvider = ({ children }) => {
   const value = {
     // Data
     progressData,
+    loading,
 
     // Recording functions
     recordSoundAttempt,
